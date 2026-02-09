@@ -21,7 +21,7 @@ async function getPageInfo(url) {
     url: url,
     content_type: response.headers['content-type'],
     content_length: +response.headers['content-length'] || -1,
-    http_code: response.statusCode,
+    http_code: response.status,
   }
 }
 
@@ -58,7 +58,7 @@ async function getPageContents(url, requestMethod, charset) {
       url: url,
       content_type: response.headers['content-type'],
       content_length: contentLength,
-      http_code: response.statusCode,
+      http_code: response.status,
     },
   }
 }
@@ -91,7 +91,7 @@ async function processError(e) {
   const { response } = e
   if (!response) return { contents: null, status: { error: e } }
 
-  const { url, statusCode: http_code, headers, body } = response
+  const { url, status: http_code, headers, body } = response
   const contentLength = Buffer.byteLength(body)
 
   return {

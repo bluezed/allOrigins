@@ -1,43 +1,42 @@
-const HttpAgent = require('agentkeepalive')
 const QuickLRU = require('../vendor/quick-lru')
-const got = require('got')
 
 const DEFAULT_USER_AGENT = `Mozilla/5.0 (compatible; allOrigins/${global.AO_VERSION}; +http://allorigins.win/)`
 
-module.exports = (function defaultGot() {
-  const gotOptions = {
-    agent: {
-      http: new HttpAgent({
-        keepAlive: false,
-      }),
-      https: new HttpAgent.HttpsAgent({
-        keepAlive: false,
-      }),
-    },
-    responseType: 'buffer',
-    dnsCache: true,
-    headers: { 'user-agent': process.env.USER_AGENT || DEFAULT_USER_AGENT },
-  }
+module.exports = (function httpClient() {
+  const storageAdapter = new QuickLRU({ maxSize: 1000 })
 
-  if (process.env.ENABLE_REDIS === '1' || true) {
-    gotOptions.cacheOptions = {
-      shared: true,
-      cacheHeuristic: 0.1,
-      immutableMinTimeToLive: 24 * 3600 * 1000, // 24h
-      ignoreCargoCult: true,
+  async function got(url, options = {}) {
+    const headers = {
+      'user-agent': process.env.USER_AGENT || DEFAULT_USER_AGENT,
+    }
+    if (options.headers) {
+      Object.assign(headers, options.headers)
+    }
+
+    const response = await fetch(url, {
+      method: options.method || 'GET',
+      headers,
+    })
+
+    const buffer = Buffer.from(await response.arrayBuffer())
+
+    return {
+      body: buffer,
+      url: response.url,
+      headers: Object.fromEntries(response.headers.entries()),
+      status: response.status,
     }
   }
 
-  const storageAdapter = new QuickLRU({ maxSize: 1000 })
-
-  gotOptions.handlers = [
-    (options, next) => {
-      gotOptions.cache = storageAdapter
-      return next(options)
+  // Cache support
+  const cache = {
+    async get(key) {
+      return storageAdapter.get(key)
     },
-  ]
+    async set(key, value, ttl) {
+      storageAdapter.set(key, value, ttl)
+    },
+  }
 
-  const gotInstance = got.extend(gotOptions)
-
-  return { got: gotInstance }
+  return { got, cache }
 })()

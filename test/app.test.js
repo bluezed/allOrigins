@@ -1,38 +1,67 @@
 const request = require('supertest')
-const nock = require('nock')
+
+// Mock http-client before requiring app
+jest.mock('../app/http-client.js', () => ({
+  got: jest.fn((url, options) => {
+    const method = options?.method || 'GET'
+    if (url === 'http://example.com/test.html') {
+      if (method === 'POST') {
+        return Promise.resolve({
+          body: Buffer.from("Hi, allOrigins! It's a POST!"),
+          url,
+          headers: {},
+          status: 200,
+        })
+      }
+      if (method === 'HEAD') {
+        return Promise.resolve({
+          body: Buffer.from(''),
+          url,
+          headers: { 'content-type': 'text/html', 'content-length': 'invalid' },
+          status: 204,
+        })
+      }
+      return Promise.resolve({
+        body: Buffer.from('Hi, allOrigins!'),
+        url,
+        headers: { 'content-type': 'text/html' },
+        status: 200,
+      })
+    }
+    if (url === 'http://example.com/test.txt') {
+      return Promise.resolve({
+        body: Buffer.from('Hello, allOrigins! 👽'),
+        url,
+        headers: { 'content-type': 'text/plain' },
+        status: 200,
+      })
+    }
+    if (url === 'http://example.com/cn.txt') {
+      return Promise.resolve({
+        body: Buffer.from(Buffer.from('C4E3BAC3CAC0BDE7A3A1', 'hex')),
+        url,
+        headers: { 'content-type': 'text/plain' },
+        status: 200,
+      })
+    }
+    if (url === 'http://example.com/not-found.html') {
+      return Promise.resolve({
+        body: Buffer.from('not found!'),
+        url,
+        headers: {},
+        status: 404,
+      })
+    }
+    return Promise.reject(new Error(`Unexpected URL: ${url}`))
+  }),
+  cache: {
+    get: jest.fn(),
+    set: jest.fn(),
+  },
+}))
+
 const app = require('../app.js')
 const getLogger = require('../app/logger.js')
-
-beforeAll(() => {
-  nock('http://example.com')
-    .persist(true)
-    .get('/test.html')
-    .reply(200, 'Hi, allOrigins!', {
-      'Content-Type': 'text/html',
-    })
-
-    .get('/test.txt')
-    .reply(200, 'Hello, allOrigins! 👽', {
-      'Content-Type': 'text/plain',
-    })
-
-    .get('/cn.txt')
-    .reply(200, Buffer.from('C4E3BAC3CAC0BDE7A3A1', 'hex'), {
-      'Content-Type': 'text/plain',
-    })
-
-    .get('/not-found.html')
-    .reply(404, 'not found!')
-
-    .post('/test.html')
-    .reply(200, "Hi, allOrigins! It's a POST!")
-
-    .head('/test.html')
-    .reply(204, undefined, {
-      'Content-Type': 'text/html',
-      'Content-Length': 'invalid',
-    })
-})
 
 test('global.AO_VERSION is defined', () => {
   expect(global.AO_VERSION).toBeDefined()
