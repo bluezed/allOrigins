@@ -60,7 +60,7 @@ async function createResponse(page, params, res, startTime) {
       ? 0
       : Math.max(
           MIN_CACHE_TIME,
-          Number(params.cacheMaxAge) || DEFAULT_CACHE_TIME
+          Number(params.cacheMaxAge) || DEFAULT_CACHE_TIME,
         )
 
     res.set('Cache-control', `public, max-age=${maxAge}, stale-if-error=600`)
@@ -76,7 +76,7 @@ async function createResponse(page, params, res, startTime) {
 
   res.set(
     'Content-Type',
-    `application/json; charset=${params.charset || 'utf-8'}`
+    `application/json; charset=${params.charset || 'utf-8'}`,
   )
 
   if (page.status) {

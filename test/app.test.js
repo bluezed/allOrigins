@@ -51,7 +51,7 @@ describe('Logger', () => {
           connection: 'close',
         },
         status: { response_time: 3, url: 'http://example.com/test.html' },
-      })
+      }),
     ).toBeFalsy()
     expect(logger.logger.log).toBeUndefined()
   })
@@ -73,7 +73,7 @@ describe('Logger', () => {
           connection: 'close',
         },
         status: { response_time: 3, url: 'http://example.com/test.html' },
-      })
+      }),
     ).not.toBeFalsy()
     expect(logger.logger.log).toBeCalled()
   })
@@ -101,7 +101,7 @@ test('Test POST to /get endpoint', async () => {
 
 test('Test /get request to not found url', async () => {
   const res = await request(app).get(
-    '/get?url=http://example.com/not-found.html'
+    '/get?url=http://example.com/not-found.html',
   )
 
   expect(res.statusCode).toBe(200)
@@ -124,7 +124,7 @@ test('Test /raw request', async () => {
 
 test('Test /get request with charset param', async () => {
   const res = await request(app).get(
-    '/get?url=http://example.com/test.txt&charset=utf-8'
+    '/get?url=http://example.com/test.txt&charset=utf-8',
   )
 
   expect(res.statusCode).toBe(200)
@@ -135,7 +135,7 @@ test('Test /get request with charset param', async () => {
 
 test('Test /get request with charset param (CN)', async () => {
   const res = await request(app).get(
-    '/get?url=http://example.com/cn.txt&charset=gbk'
+    '/get?url=http://example.com/cn.txt&charset=gbk',
   )
 
   expect(res.statusCode).toBe(200)
@@ -146,7 +146,7 @@ test('Test /get request with charset param (CN)', async () => {
 
 test('Test /get request with callback param', async () => {
   const res = await request(app).get(
-    '/get?url=http://example.com/test.txt&callback=myFunc'
+    '/get?url=http://example.com/test.txt&callback=myFunc',
   )
 
   expect(res.statusCode).toBe(200)
@@ -175,7 +175,7 @@ test('Test OPTIONS request', async () => {
   // 'cause we accept requests from allOrigins :D
   expect(res.headers['access-control-allow-origin']).toBe(RANDOM_ORIGIN)
   expect(res.headers['access-control-allow-methods']).toBe(
-    'OPTIONS, GET, POST, PATCH, PUT, DELETE'
+    'OPTIONS, GET, POST, PATCH, PUT, DELETE',
   )
 
   expect(res.body.contents).toBeUndefined()
@@ -183,12 +183,12 @@ test('Test OPTIONS request', async () => {
 
 test('with disableCache', async () => {
   const res = await request(app).get(
-    `/get?url=http://example.com/test.html&disableCache=true`
+    `/get?url=http://example.com/test.html&disableCache=true`,
   )
 
   expect(res.statusCode).toBe(200)
   expect(res.headers['cache-control']).toBe(
-    `public, max-age=0, stale-if-error=600`
+    `public, max-age=0, stale-if-error=600`,
   )
 
   expect(res.body.contents).toBeDefined()
@@ -198,12 +198,12 @@ test('with disableCache', async () => {
 
 test('with disableCache and valid cacheMaxAge', async () => {
   const res = await request(app).get(
-    `/get?url=http://example.com/test.html&disableCache=true&cacheMaxAge=1000`
+    `/get?url=http://example.com/test.html&disableCache=true&cacheMaxAge=1000`,
   )
 
   expect(res.statusCode).toBe(200)
   expect(res.headers['cache-control']).toBe(
-    `public, max-age=0, stale-if-error=600`
+    `public, max-age=0, stale-if-error=600`,
   )
 
   expect(res.body.contents).toBeDefined()
@@ -219,12 +219,12 @@ describe.each([
 ])('%s', (_, param, expected) => {
   test('Test /raw request', async () => {
     const res = await request(app).get(
-      `/raw?url=http://example.com/test.html&cacheMaxAge=${param}`
+      `/raw?url=http://example.com/test.html&cacheMaxAge=${param}`,
     )
 
     expect(res.statusCode).toBe(200)
     expect(res.headers['cache-control']).toBe(
-      `public, max-age=${expected}, stale-if-error=600`
+      `public, max-age=${expected}, stale-if-error=600`,
     )
 
     expect(res.body.contents).toBeUndefined()
@@ -234,12 +234,12 @@ describe.each([
 
   test('Test /get request', async () => {
     const res = await request(app).get(
-      `/get?url=http://example.com/test.html&cacheMaxAge=${param}`
+      `/get?url=http://example.com/test.html&cacheMaxAge=${param}`,
     )
 
     expect(res.statusCode).toBe(200)
     expect(res.headers['cache-control']).toBe(
-      `public, max-age=${expected}, stale-if-error=600`
+      `public, max-age=${expected}, stale-if-error=600`,
     )
 
     expect(res.body.contents).toBeDefined()
@@ -249,7 +249,7 @@ describe.each([
 
   test('Test POST to /json endpoint', async () => {
     const res = await request(app).post(
-      `/json?url=http://example.com/test.html&cacheMaxAge=${param}`
+      `/json?url=http://example.com/test.html&cacheMaxAge=${param}`,
     )
 
     expect(res.statusCode).toBe(200)

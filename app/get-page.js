@@ -30,7 +30,7 @@ async function getRawPage(url, requestMethod, charset) {
     url,
     requestMethod,
     true,
-    charset
+    charset,
   )
   if (error) return processError(error)
 
@@ -47,7 +47,7 @@ async function getPageContents(url, requestMethod, charset) {
     url,
     requestMethod,
     false,
-    charset
+    charset,
   )
   if (error) return processError(error)
 
